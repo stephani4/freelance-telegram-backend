@@ -5,9 +5,14 @@
     "keywords": ["laravel", "framework"],
     "license": "MIT",
     "require": {
-        "php": "^8.2",
-        "laravel/framework": "^12.0",
-        "laravel/tinker": "dev-develop"
+        "php": "8.2.21",
+        "kalnoy/nestedset": "^6.0",
+        "laravel/framework": "^11.9",
+        "laravel/sanctum": "^4.0",
+        "laravel/tinker": "^2.9",
+        "php-open-source-saver/jwt-auth": "^2.3",
+        "spatie/laravel-permission": "^6.9",
+        "tucker-eric/eloquentfilter": "^3.4"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -46,9 +51,6 @@
         ]
     },
     "extra": {
-        "branch-alias": {
-            "dev-master": "12.x-dev"
-        },
         "laravel": {
             "dont-discover": []
         }
@@ -62,6 +64,6 @@
             "php-http/discovery": true
         }
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "prefer-stable": true
 }
