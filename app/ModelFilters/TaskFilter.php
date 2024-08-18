@@ -14,16 +14,39 @@ class TaskFilter extends ModelFilter
     */
     public $relations = [];
 
+    /**
+     * @param $column
+     * @return TaskFilter
+     */
     public function orderByDesc($column)
     {
         return parent::orderByDesc($column);
     }
 
+    /**
+     * @param $name
+     * @return TaskFilter|void
+     */
+    public function name($name)
+    {
+        if (is_string($name) && strlen($name) > 0) {
+            return $this->where('name', 'ILIKE', "%{$name}%");
+        }
+    }
+
+    /**
+     * @param $id
+     * @return TaskFilter
+     */
     public function user($id)
     {
         return $this->where('user_id', $id);
     }
 
+    /**
+     * @param $status
+     * @return TaskFilter
+     */
     public function status($status)
     {
         return $this->where('status', $status);

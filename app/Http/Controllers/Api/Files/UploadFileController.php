@@ -20,37 +20,32 @@ class UploadFileController extends Controller
      * @param Request $request
      * @return mixed
      */
-    public function upload(Request $request)
+    public function upload(Request $request): mixed
     {
-        $data = $request->validate(['files' => 'required|file|mimetypes:image/jpeg,image/png,application/pdf,application']);
-
-        if (!$request->hasFile('files')) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Параметр "file" не соответсвует типа файла'
-            ], 403);
-        }
-
         $file = $request->file('files');
-         Storage::disk('local')->put(
-            $path = md5(microtime()) . '_' . $file->getClientOriginalName(),
-            $file->getContent()
-        );
+        $file = is_array($file)? $file : [$file];
 
-        $resource = $this->fileService->create([
-            'name'     => $file->getBasename(),
-            'size'     => $file->getSize(),
-            'path'     => $path,
-            'mimetype' => $file->getMimeType(),
-            'format'   => $file->getClientOriginalExtension()
-        ]);
+        $resources = [];
+        foreach ($file as $singleFile) {
+            Storage::disk('local')->put(
+                $path = md5(microtime()) . '_' . $singleFile->getClientOriginalName(),
+                $singleFile->getContent()
+            );
+
+            $resources[] = $this->fileService->create([
+                'name'     => $singleFile->getBasename(),
+                'size'     => $singleFile->getSize(),
+                'path'     => $path,
+                'mimetype' => $singleFile->getMimeType(),
+                'format'   => $singleFile->getClientOriginalExtension()
+            ]);
+        }
 
         return response()->json([
             'status' => 'success',
             'message' => 'Файл`ы успешно загружен`ы;',
             'payload' => [
-                'files' => $resource,
-                'path' => $path
+                'files' => $resources,
             ]
         ]);
     }

@@ -24,7 +24,7 @@ class UserService
      * @param int $id
      * @return mixed
      */
-    public function find(int $id) : self
+    public function find(int $id): self
     {
         $this->user = $this->userModal->find($id);
 
@@ -32,16 +32,58 @@ class UserService
     }
 
     /**
+     * Поиск пользователя по Telegram ID
+     *
      * @param int $telegramID
-     * @return $this
+     * @return UserService
      */
-    public function findByTelegramId(int $telegramID) : self
+    public function findByTelegramId(int $telegramID): self
     {
         $this->user = $this->authUserResourceModal
-            ->with('user')
+            ->where('telegram_id', $telegramID)
+            ->with(['user' => function ($query) {
+                return $query->with('roles');
+            }])
+            ->first();
+
+        return $this;
+    }
+
+    /**
+     * Регистрация из Telegram
+     *
+     * @param int $telegramID
+     * @param array $data
+     * @return $this
+     */
+    public function registerFromTelegram(int $telegramID, array $data): self
+    {
+        $existResource = $this
+            ->authUserResourceModal
             ->where('telegram_id', $telegramID)
             ->first();
 
+        $user = $existResource
+            ? $this->findByTelegramId($telegramID)->getUser()->user
+            : new User;
+
+        if (!$existResource) {
+            // Создаем нового пользователя
+            $user->name = $data['first_name'] . ' '. $data['last_name'];
+            $user->save();
+
+            $user->resource()->create([
+                'user_id' => $user->id,
+                'telegram_id' => $telegramID,
+            ]);
+        } else {
+            // Обновляем данные пользователя
+            $user
+                ->fill(array_merge($data, ['register' => true]))
+                ->save();
+        }
+
+        $this->user = $user;
         return $this;
     }
 
@@ -59,7 +101,7 @@ class UserService
      * @param array $data
      * @return void
      */
-    public function update(User $user, array $data) : void
+    public function update(User $user, array $data): void
     {
         $user->fill($data)->save();
     }
@@ -72,4 +114,11 @@ class UserService
         return $this->user;
     }
 
+    /**
+     * @return bool
+     */
+    public function isExistUser() : bool
+    {
+        return !!$this->user;
+    }
 }

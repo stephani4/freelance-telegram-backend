@@ -4,6 +4,8 @@ namespace App\Models;
 
 use EloquentFilter\Filterable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
@@ -26,6 +28,7 @@ class User extends Authenticatable implements JWTSubject
         'password',
         'description',
         'specialty',
+        'register',
     ];
 
     /**
@@ -69,5 +72,29 @@ class User extends Authenticatable implements JWTSubject
     public function getJWTCustomClaims(): array
     {
         return [];
+    }
+
+    /**
+     * @return HasOne
+     */
+    public function resource(): HasOne
+    {
+        return $this->hasOne(AuthUserResource::class);
+    }
+
+    /**
+     * @return HasMany
+     */
+    public function tasks(): HasMany
+    {
+        return $this->hasMany(Task::class);
+    }
+
+    /**
+     * @return HasMany
+     */
+    public function cashCards(): HasMany
+    {
+        return $this->hasMany(CashCard::class);
     }
 }

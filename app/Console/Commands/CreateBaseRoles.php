@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\Roles;
 use Illuminate\Console\Command;
 use Spatie\Permission\Models\Role;
 
@@ -28,16 +29,23 @@ class CreateBaseRoles extends Command
     {
         $roles = $this->getBaseRoles();
         foreach ($roles as $role) {
-            if (!Role::where('name', $role)->count()) {
-                Role::create(['name' => $role]);
+            if (!Role::where('name', $role['name'])->count()) {
+                Role::create(['name' => $role, 'ru_name' => $role['ru_name']]);
             }
         }
     }
 
-    private function getBaseRoles() : array
+    private function getBaseRoles(): array
     {
         return [
-            'admin'
+            [
+                'name' => Roles::ADMIN->value,
+                'ru_name' => 'Администратор',
+            ],
+            [
+                'name' => Roles::TASK_MODERATOR->value,
+                'ru_name' => 'Модератор задач',
+            ]
         ];
     }
 }

@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 class CheckLoginController extends Controller
 {
     /**
-     * @var \App\Http\Services\Telegram\AuthService
+     * @var AuthService
      */
     private AuthService $authService;
 
@@ -21,7 +21,8 @@ class CheckLoginController extends Controller
 
     public function __construct()
     {
-        $this->authService = new \App\Http\Services\Telegram\AuthService();
+        $this->authService = new AuthService();
+
         $this->userService = new UserService();
     }
 
@@ -33,11 +34,24 @@ class CheckLoginController extends Controller
      */
     public function index(Request $request): mixed
     {
-        $user = auth('api')->user();
+        $data = $request->all();
+        $webAppInitData = $data['web_app_init_data'];
+
+        // Преобразуем query string в массив
+        $variables = [];
+        parse_str($webAppInitData, $variables);
+        $variables = (object)$variables;
+
+        $user = is_string($variables->user) && strlen($variables->user) > 0
+            ? json_decode($variables->user)
+            : null;
+
+        if (!$user)
+            return response()->json(['error' => 'Отсутвует пользователь в строке идентификации'], 403);
 
         $this
             ->userService
-            ->find($user->id);
+            ->findByTelegramId($user->id);
 
         if (!$this->userService->getUser()) {
             return response()->json([
@@ -46,15 +60,13 @@ class CheckLoginController extends Controller
             ], 200);
         }
 
-        $user = $this->userService->getUser();
-        $roles = $user->roles;
-
-        $user = $user->toArray();
-        $user['roles'] = $roles;
+        $token = $this->authService->getTokenByTelegramId($user->id);
+        $user = $this->userService->getUser()->user;
 
         return response()->json([
             'exist' => true,
-            'user' => $this->userService->getUser()
+            'token' => $token,
+            'user' => $user,
         ], 200);
     }
 }

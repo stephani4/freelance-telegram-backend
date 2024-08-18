@@ -6,6 +6,7 @@ use App\Enums\TaskStatus;
 use EloquentFilter\Filterable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Task extends Model
 {
@@ -36,6 +37,14 @@ class Task extends Model
     }
 
     /**
+     * @return BelongsTo
+     */
+    public function serviceCategory(): BelongsTo
+    {
+        return $this->belongsTo(ServiceCategory::class);
+    }
+
+    /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function files()
@@ -43,5 +52,13 @@ class Task extends Model
         return $this
             ->belongsToMany(Files::class, 'task_files', 'task_id', 'file_id')
             ->withPivot('side');
+    }
+
+    /**
+     * @return BelongsTo
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }

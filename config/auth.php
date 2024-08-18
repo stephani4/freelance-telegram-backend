@@ -117,8 +117,10 @@ return [
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
     'issue_roles_users' => [
-        'admin' => [
-            \App\Models\User::TG_ID_GUBIN_STEPAN
+        [
+            "role"      => "admin",
+            "ru_name"   => "Администратор",
+            "user"      => \App\Models\User::TG_ID_GUBIN_STEPAN
         ]
     ]
 ];

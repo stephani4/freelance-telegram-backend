@@ -28,14 +28,12 @@ class IssueRolesToBaseUsers extends Command
     public function handle()
     {
         $usersRoles = $this->getBaseUsersRoles();
-        foreach ($usersRoles as $role => $users) {
-            foreach ($users as $telegramID) {
-                $user = AuthUserResource::where('telegram_id', $telegramID)
-                    ->first()
-                    ->user;
+        foreach ($usersRoles as $userRole) {
+            $user = AuthUserResource::where('telegram_id', $userRole['user'])
+                ->first()
+                ->user;
 
-                $user->assignRole($role);
-            }
+            $user->assignRole($userRole['role']);
         }
     }
 

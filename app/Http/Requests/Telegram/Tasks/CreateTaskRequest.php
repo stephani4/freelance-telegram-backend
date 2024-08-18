@@ -23,7 +23,6 @@ class CreateTaskRequest extends FormRequest
     {
         return [
             'service_category_id' => 'required|int|exists:service_categories,id',
-            'main_image_id' => 'required|int|exists:files,id',
             'description' => 'required|string|max:255',
             'name' => 'required|string|max:255',
             'complete_at' => 'required|date',

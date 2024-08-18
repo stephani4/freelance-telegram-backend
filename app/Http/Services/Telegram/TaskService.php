@@ -38,9 +38,9 @@ class TaskService
     /**
      * @param int $userID
      * @param array $data
-     * @return int
+     * @return Task
      */
-    public function create(int $userID, array $data) : int
+    public function create(int $userID, array $data): Task
     {
         $task = $this->taskInstance(array_merge($data, [
             'user_id' => $userID,
@@ -49,27 +49,42 @@ class TaskService
 
         $task->save();
 
-        $task->files()->attach([$data['main_image_id'] => [
-            'side' => 'main',
-        ]]);
+        $attachingFiles = [];
+        foreach ($data['files'] as $file) {
+            $attachingFiles[$file['id']] = [
+                'side' => 'app',
+            ];
+        }
+
+        $task->files()->attach($attachingFiles);
 
         // Переносим изображение в папку "Стабильные"
-        Files::movedToFolder(
-            Files::find($data['main_image_id']),
-            FolderType::STABLE->value
-        );
+        if (is_array($data['files'])) {
+            foreach ($data['files'] as $file) {
+                Files::movedToFolder(
+                    Files::find($file['id']),
+                    FolderType::STABLE->value
+                );
+            }
+        }
 
-        return $task->id;
+        return $task;
     }
 
     /**
-     * @param array $filter
+     * @param array $filters
      * @return mixed
      */
-    public function getTasksByFilter(array $filter = []): mixed
+    public function getTasksByFilter(array $filters = []): mixed
     {
-        return Task::filter($filter)
-            ->with('files')
+        return Task::filter($filters)
+            ->with(['files', 'user' => function ($query) {
+                return $query->withCount('tasks');
+            }, 'serviceCategory' => function ($query) {
+                return $query->with(['ancestors' => function ($query) {
+                    return $query->where('parent_id', '!=', 0);
+                }]);
+            }])
             ->paginate(self::PER_PAGE);
     }
 
@@ -86,7 +101,7 @@ class TaskService
      * @param array $fill
      * @return Task
      */
-    public function taskInstance(array $fill = []) : Task
+    public function taskInstance(array $fill = []): Task
     {
         return (new Task())->fill($fill);
     }
